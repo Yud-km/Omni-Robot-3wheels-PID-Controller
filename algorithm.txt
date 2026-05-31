@@ -1,0 +1,64 @@
+Bước 1: Bắt đầu chương trình.
+
+Bước 2: Khởi tạo hệ thống:
+- Khởi tạo Serial.
+- Khởi tạo chân điều khiển động cơ.
+- Khởi tạo chân encoder A/B.
+- Gắn ngắt encoder.
+- Reset tọa độ ban đầu.
+- Reset các bộ điều khiển PID.
+- Dừng toàn bộ động cơ.
+
+Bước 3: Chương trình đi vào vòng lặp chính.
+
+Bước 4: Kiểm tra lệnh gửi từ Serial.
+- Nếu lệnh START thì chạy quỹ đạo thẳng mặc định.
+- Nếu lệnh LINE thì tạo quỹ đạo thẳng theo quãng đường và góc nhập vào.
+- Nếu lệnh GOTO thì tạo quỹ đạo từ vị trí hiện tại đến tọa độ đích.
+- Nếu lệnh STOP thì dừng robot.
+- Nếu lệnh RESET thì reset tọa độ và encoder.
+- Nếu lệnh STATUS thì in trạng thái robot.
+- Nếu lệnh ENCODER thì in giá trị encoder.
+
+Bước 5: Cứ sau mỗi chu kỳ 10 ms, thực hiện điều khiển:
+- Đọc encoder của 3 động cơ.
+- Tính tốc độ góc thực tế của từng bánh xe.
+- Dựa vào động học thuận, tính vận tốc thân robot u, v, r.
+- Đổi vận tốc thân robot sang vận tốc toàn cục.
+- Cập nhật tọa độ x, y, theta của robot.
+
+Bước 6: Kiểm tra trạng thái robot:
+- Nếu robot đang ở trạng thái IDLE thì dừng động cơ và quay lại vòng lặp.
+- Nếu robot đang chạy thì tiếp tục điều khiển.
+
+Bước 7: Cập nhật quỹ đạo đặt:
+- Với quỹ đạo đường thẳng, điểm đặt xRef, yRef được tăng dần từ điểm đầu đến điểm cuối.
+- Việc tăng dần điểm đặt giúp robot chạy mượt hơn, không bị giật.
+
+Bước 8: Thực hiện PID vị trí:
+- Tính sai số ex = xRef - x.
+- Tính sai số ey = yRef - y.
+- Tính sai số etheta = thetaRef - theta.
+- PID vị trí tạo ra vận tốc đặt vxWorldRef, vyWorldRef, omegaRef.
+
+Bước 9: Chuyển đổi vận tốc:
+- Đổi vận tốc toàn cục vxWorldRef, vyWorldRef sang vận tốc thân robot uRef, vRef.
+- Dùng động học nghịch omni 3 bánh để tính tốc độ đặt cho từng bánh:
+  wheelRef1, wheelRef2, wheelRef3.
+
+Bước 10: Thực hiện PID tốc độ:
+- Đọc tốc độ thực tế wheelOmega1, wheelOmega2, wheelOmega3 từ encoder.
+- Tính sai số tốc độ từng bánh.
+- PID tốc độ tạo ra PWM điều khiển từng động cơ.
+
+Bước 11: Xuất tín hiệu điều khiển:
+- Nếu PWM dương thì motor quay thuận.
+- Nếu PWM âm thì motor quay ngược.
+- Nếu PWM bằng 0 thì motor dừng.
+- Xuất PWM ra driver điều khiển động cơ JGB37-545.
+
+Bước 12: Kiểm tra điều kiện kết thúc:
+- Nếu robot chưa tới đích thì tiếp tục lặp lại chu kỳ điều khiển.
+- Nếu robot đã tới đích thì dừng motor, reset PID và chuyển về trạng thái IDLE.
+
+Bước 13: Kết thúc một chu kỳ điều khiển và quay lại vòng lặp chính.
